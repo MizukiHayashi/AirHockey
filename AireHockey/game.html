@@ -160,7 +160,7 @@
 
           document.querySelector('#connect').addEventListener('click',connectSocket);
 
-          document.addEventListener('mousemove',functoin(e){
+          document.addEventListener('mousemove',function(e){
             var canvasPos = canvas.getBoundingClientRect();
             user.pos.x=clamp(e.x - canvasPos.left, (side.is * canvas.width/2)+user.img.width/2, (side.is*canvas.width/2)+canvas.width/2-user.img.width/2);
             user.pos.y=clamp(e.y - canvasPos.top, user.img.width/2, canvas.height-user.img.height/2);
@@ -186,13 +186,56 @@
           ctx.drawImage(user.img, user.pos.x - user.img.width/2, user.pos.y - user.img.height/2);
           ctx.drawImage(otherUser.img, otherUser.pos.x - otherUser.img.width/2, otherUser.pos.y - otherUser.img.height/2);
 
+          ctx.save();
+          if(side.is===0){
+            ctx.fillText(user.username+": "+user.points,5,25);
+            ctx.textAlign = "end";
+            ctx.fillText(otherUser.points+ " :"+otherUser.username,canvas.width - 5, 25);
+          }
+          else{
+            ctx.fillText(otherUser.username + "+ "+otherUser.points,5,25);
+            ctx.textAlign = "end";
+            ctx.fillText(user.points + " :" + user.username, canvas.width - 5, 25);
+          }
+          ctx.restore();
+
+          socket.emit("update",{pos: user.pos})
+
+          if(notification != ""){
+            ctx.save();
+            ctx.font = "36pt MSゴシック";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(notification, canvas.width/2, canvas.height/3);
+            ctx.restore();
+          }
+          requestAnimationFrame(update);
         }
-      })
+
+        function bouncePuck(){
+          if((puck.pos.x - puck.radius < 0) || (puck.pos.x + puck.radius > canvas.width)){
+            puck.vel.x *= -1;
+          }
+          if((puck.pos.y - puck.radius < 0) || (puck.pos.y + puck.radius > canvas.height)){
+            puck.vel.y *= -1;
+          }
+        }
+        window.onload = init;
+      })();
+
     </script>
   </head>
   <body>
-    <script type="text/javascript">
+    <h1>アイス　ホッケー!</h1>
+    <p id="serverInfo">Please enter a username to connect to another player.</p>
+    <p id="joinForm">
+      <label for="user">Username:</label>
+      <input id="username" name="user" type="text" >
+      <input id="connect" type="button" value="connect">
+    </p>
+    <div id="canvasContainer">
+      <canvas  width="1280" height="720"></canvas>
 
-    </script>
+    </div>
   </body>
 </html>
