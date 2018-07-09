@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>エアホッケー</title>
+    <style>
+      h1,p{
+        text-align: center;
+      }
+      canvas{
+        border: 1px solid black;
+        background-size: cover;
+      }
+
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+      (function(){
+        var canvas;
+        var ctx;
+
+        var bufferCanvas;
+        var bufferCtx;
+
+        var serverInfo;
+        var notification;
+
+        var socket;
+        var side= {
+          is:0
+        }
+        var user={
+          username:"",
+          pos:{
+            x:0,
+            y:0
+          },
+          points:0,
+          img: new Image()
+        };
+        var otherUser = {
+          username: "",
+          pos: {
+            x:-64,
+            x:-64
+          },
+          points: 0,
+          img: new Image(),
+          lastTime: new Date().getTime()
+        };
+        var puck = {
+          pos: {
+            x:640,
+            y:400
+          },
+          vel:{
+            x:0,
+            y:0
+          },
+          img: new Image(),
+          radius: 25,
+          lastTime: new Date().getTime ()
+        };
+
+        function connectSocket(e){
+          socket = io.connect();
+
+          socket.emit("update",{pos: user.pos})
+          socket.on("msg",function(data){
+            serverInfo.innerHTML = data.msg;
+          });
+          socket.on("connect",function(){
+            console.log("Connectiong...");
+
+            user.username = document.querySelector('#username').value;
+
+            if(!user.username || user.username === ""){
+              username = 'user' + Math.floor(Math.random() * 1000000);
+            }
+            socket.emit("join",{name: user.username});
+          });
+
+          socket.on("updateInfo",function(data){
+            switch (data.object) {
+              case "user":
+                if(data.pos){
+                  user.pos = data.pos;
+                }
+                if(data.side){
+                  side.is = data.side;
+                  Object.freeze(side);
+                }
+                if(data.username){
+                  user.username = data.username;
+                }
+                break;
+              case "otherUser":
+                if(data.time>otherUser.lastTime){
+                  if(data.pos){
+                    otherUser.pos=data.pos;
+                  }
+                  if(data.username){
+                    otherUser.username = data.username;
+                  }
+
+                  otherUser.lastTime = data.time;
+                }
+                break;
+              case "puck":
+                if(data.time > puck.lastTime){
+                  puck.pos = data.pos;
+                  puck.vel = data.vel;
+
+                  puck.lastTime = data.time;
+                }
+                break;
+            }
+          });
+        socket.on("scorePoint",function(data){
+          if(data.side === side.is){
+            ++otherUser.points;
+          }
+          else{
+            ++user.points;
+          }
+        });
+
+        socket.on("joinSuccess",function(){
+          document.querySelector('#joinForm').style.display = "none";
+        });
+
+        socket.on("notify",function(data){
+          notification = data.msg;
+
+          if(data.duration > 0){
+            setTimeout(function(currentNotif){
+              if(notification === data.msg){
+                notification = "";
+              }
+            },data.duration);
+          }
+        });
+
+        socket.on("beginPlay",update);
+        }
+
+        function clamp(val,min,max){
+          return Math.max(min,Math.min(val,max));
+        }
+
+        function init(){
+          canvas = document.querySelector('canvas');
+          ctx = canvas.getContext('2d');
+
+          bufferCanvas=document.createElement('canvas');
+          bufferCtx=bufferCanvas.getContext('2d');
+
+          serverInfo = document.querySelector('#serverInfo');
+
+          document.querySelector('#connect').addEventListener('click',connectSocket);
+
+          document.addEventListener('mousemove',functoin(e){
+            var canvasPos = canvas.getBoundingClientRect();
+            user.pos.x=clamp(e.x - canvasPos.left, (side.is * canvas.width/2)+user.img.width/2, (side.is*canvas.width/2)+canvas.width/2-user.img.width/2);
+            user.pos.y=clamp(e.y - canvasPos.top, user.img.width/2, canvas.height-user.img.height/2);
+          })
+          user.img.src = "";
+          otherUser.img.src = "";
+          puck.img.src="";
+          ctx.font = "14pt 'MS ゴシック'";
+        }
+
+        function update(){
+          ctx.clearRect(0,0,canvas.width,canvas.height);
+
+          puck.pos.x += puck.vel.x;
+          puck.pos.y += puck.vel.y;
+
+          bouncePuck();
+
+          puck.vel.x *= 0.9975;
+          puck.vel.y *= 0.9975;
+
+          ctx.drawImage(puck.img, puck.pos.x - puck.img.width/2, puck.pos.y - puck.img.height/2);
+          ctx.drawImage(user.img, user.pos.x - user.img.width/2, user.pos.y - user.img.height/2);
+          ctx.drawImage(otherUser.img, otherUser.pos.x - otherUser.img.width/2, otherUser.pos.y - otherUser.img.height/2);
+
+        }
+      })
+    </script>
+  </head>
+  <body>
+    <script type="text/javascript">
+
+    </script>
+  </body>
+</html>
