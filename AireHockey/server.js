@@ -1,7 +1,7 @@
 var http = require("http");
 var socketio = require("socket.io");
-var router = require("router.js");
-var gameManager = require("GameManager.js");
+var router = require("./router.js");
+var gameManager = require("./gameManager.js");
 var port = 3001;
 
 var curRoomNum = 1;
@@ -24,7 +24,7 @@ function createGame(){
   userQueue[0].join(roomName);
   userQueue[1].join(roomName);
 
-  var newGame = new GameManager(roomName, io, userQueue[0], userQueue[1]);
+  var newGame = new gameManager(roomName, io, userQueue[0], userQueue[1]);
   currentGames.push(newGame);
 
   userQueue.splice(0,2);
@@ -52,6 +52,7 @@ var onJoined = function(socket){
     socket.emit("msg",{msg: "対戦相手を待っています"});
     socket.emit("接続完了");
     if(userQueue.length >= 2){
+      socket.emit("接続完了");
       createGame();
     }
   });
