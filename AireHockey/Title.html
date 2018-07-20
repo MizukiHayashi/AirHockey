@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>ホッケー</title>
+  </head>
+  <body>
+    <canvas id="sample" width="1280" height="720"></canvas>
+    <script type="text/javascript">
+
+    const image  = new Image();
+    const image2 = new Image();
+    image.src    = "Images/Title.png";
+    image2.src   = "Images/Title2.png";
+
+    var titlebgm = new Audio();
+    titlebgm.autoplay = false;
+    titlebgm.src = "Sounds/titlebgm.mp3";
+    titlebgm.loop = true;
+
+    var titlese = new Audio();
+    titlese.autoplay = false;
+    titlese.src = "Sounds/titlese.mp3";
+    titlese.loop = false;
+    var aloaded = 0;
+    var ANIMATION_ID;
+    window.onload = function() {
+
+    	const canvas = document.querySelector("#sample");
+    	const ctx    = canvas.getContext('2d');
+      canvas.addEventListener('click', onClick, false);
+      function onClick (e) {
+        var rect = e.target.getBoundingClientRect();
+        var mx = e.clientX - rect.left;
+        var my = e.clientY - rect.top;
+        if(aloaded == 1) {
+          titlebgm.currentTime = 0;
+          titlebgm.play();
+          aloaded = 2;
+        }
+        if ((350 <= mx) && (mx <= 950)) {
+            if (470 <= my && (my <= 570)) {
+              titlese.currentTime = 0;
+              titlese.play();
+              location.href = "game.html";
+            }
+          }
+        };
+        let x = 0;
+      	let y = 0;
+
+      	image.onload = () => {
+      		ctx.drawImage(image, x, y);
+          ctx.drawImage(image2, x, y);
+          titlebgm.currentTime = 0;
+          titlebgm.play();
+      	}
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.globalAlpha = 1.0;
+        ctx.drawImage(image, x, y);
+        ctx.drawImage(image2, x, y);
+        if(aloaded == 0) {
+          titlebgm.load();
+          aloaded = 1;
+        }
+      };
+    </script>
+  </body>
+</html>
