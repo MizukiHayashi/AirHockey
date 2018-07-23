@@ -77,9 +77,9 @@
           img: new Image(),
           radius: 15,
           beginItem: false,
+          alive: true,
           lastTime: new Date().getTime()
         };
-        var paddleScale = new Image();
         var puckScale = new Image();
         var puckSpeed = new Image();
         function connectSocket(e){
@@ -90,7 +90,7 @@
             serverInfo.innerHTML = data.msg;
           });
           socket.on("connect",function(){
-            console.log("Connectiong...");
+            console.log("接続中...");
 
             user.username = document.querySelector('#username').value;
 
@@ -130,7 +130,7 @@
                 if(data.time > puck.lastTime){
                   puck.pos = data.pos;
                   puck.vel = data.vel;
-
+                  puck.radius = data.radius;
                   puck.lastTime = data.time;
                 }
                 break;
@@ -139,6 +139,7 @@
                   item.itemCount = data.itemCount;
                   item.itemNum = data.itemNum;
                   item.pos = data.pos;
+                  item.alive = data.alive;
                   item.lastTime = data.time;
                 }
             }
@@ -194,7 +195,6 @@
           user.img.src = "/Images/userPaddle.png";
           otherUser.img.src = "/Images/enemyPaddle.png";
           puck.img.src="/Images/puck.png";
-          paddleScale.src = "Images/paddleScale.png";
           puckScale.src = "Images/puckScale.png";
           puckSpeed.src = "Images/puckSpeed.png";
           ctx.font = "14pt 'MS ゴシック'";
@@ -212,12 +212,9 @@
             if(item.beginItem == false){
               switch (item.itemNum) {
                 case 0:
-                  item.img.src = paddleScale.src;
-                  break;
-                case 1:
                   item.img.src = puckScale.src;
                   break;
-                case 2:
+                case 1:
                   item.img.src = puckSpeed.src;
                   break;
               }
@@ -233,11 +230,16 @@
           }
 
 
-          ctx.drawImage(puck.img, puck.pos.x - puck.img.width/2, puck.pos.y - puck.img.height/2);
+          ctx.drawImage(puck.img,0,0,48,48, puck.pos.x - puck.img.width/2, puck.pos.y - puck.img.height/2,puck.radius*2,puck.radius*2);
           ctx.drawImage(user.img, user.pos.x - user.img.width/2, user.pos.y - user.img.height/2);
-          ctx.drawImage(otherUser.img, otherUser.pos.x - otherUser.img.width/2, otherUser.pos.y - otherUser.img.height/2);
+          ctx.drawImage(otherUser.img,otherUser.pos.x - otherUser.img.width/2, otherUser.pos.y - otherUser.img.height/2);
           if(item.beginItem == true){
-            ctx.drawImage(item.img, item.pos.x - item.img.width/2, item.pos.y - item.img.height/2);
+            if(item.alive == true){
+              ctx.drawImage(item.img, item.pos.x - item.img.width/2, item.pos.y - item.img.height/2);
+            }
+            else{
+              item.beginItem = false;
+            }
           }
 
           ctx.save();

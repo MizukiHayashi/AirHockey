@@ -29,17 +29,22 @@ class GameManager{
       itemCount: 0,
       itemNum: 0,
       pos:{
-        x: this.randomv(this.gameWidth/2),
-        y: this.randomv(this.gameHeight/2)
+        x: this.randomv(this.gameWidth-50)+15,
+        y: this.randomv(this.gameHeight-50)+15
       },
       vel:{
         x: 1,
         y: 1
       },
       radius: 15,
-      itemInstTime: 15*60,
-      itemTimer: 0
+      alive: false
     };
+
+    this.getItem = false;
+    this.itemEfficacyTime = 1000;
+    this.efficacyTimer = 0;
+    this.itemInstTime = 1600;
+    this.itemInstTimer = 0;
 
     this.p1.radius = this.p2.radius = 50;
 
@@ -91,7 +96,7 @@ class GameManager{
     this.p2.emit("updateInfo",{object: "user", side: 1});
     this.p2.side=1;
 
-    this.notifyUsersMultiple(["10秒後に開始します","開始まで 3","2","1","開始！"],1000);
+    this.notifyUsersMultiple(["5秒後に開始します","開始まで 3","2","1","開始！"],1000);
     this.activateGame(5000);
   }
 
@@ -104,7 +109,7 @@ class GameManager{
         socket.prevPos = data.pos;
       }
       socket.pos = data.pos;
-      socket.broadcast.to(socket.roomName).emit("updateInfo",{object: "otherUser",pos: data.pos, time: new Date().getTime() });
+      socket.broadcast.to(socket.roomName).emit("updateInfo",{object: "otherUser",pos: data.pos,radius: data.radius, time: new Date().getTime() });
     });
   }
 
@@ -164,25 +169,33 @@ class GameManager{
 
 
       if(this.item.itemCount === 0){
-        this.item.itemTimer++;
-        //console.log(itemTimer);
+        this.itemInstTimer++;
+        //console.log(itemInstTimer);
       }
-      if(this.item.itemCount === 0 &&   this.item.itemTimer >= this.item.itemInstTime){
-        var itemRand = this.randomv(2);
-        switch (itemRand) {
-          case 0:
-            this.item.itemNum = 0;
-            break;
-          case 1:
-            this.item.itemNum = 1;
-            break;
-          case 2:
-            this.item.itemNum = 2;
-            break;
+      if(this.item.itemCount === 0 &&   this.itemInstTimer >= this.itemInstTime){
+        var itemRand = this.randomv(10);
+        if(itemRand >= 5){
+          this.item.itemNum = 0;
         }
-
+        else{
+          this.item.itemNum = 1;
+        }
+        this.item.pos.x = this.randomv(this.gameWidth-50)+15;
+        this.item.pos.y = this.randomv(this.gameHeight-50)+15;
+        this.item.vel.x = 1;
+        this.item.vel.y = 1;
+        this.item.alive = true;
         this.item.itemCount = 1;
-        this.item.itemTimer = 0;
+        this.itemInstTimer = 0;
+      }
+
+      if(this.getItem == true){
+        this.efficacyTimer++;
+        if(this.efficacyTimer >= this.itemEfficacyTime){
+          this.resetItemEfficacy();
+          this.getItem = false;
+          this.efficacyTimer = 0;
+        }
       }
 
       if(this.distance(this.p1, this.puck)< this.p1.radius + this.puck.radius){
@@ -213,30 +226,31 @@ class GameManager{
       if(this.distance(this.p1, this.item) < this.p1.radius + this.item.radius){
         switch (this.item.itemNum) {
           case 0:
-            this.p1.radius = this.p1.radius* 1.5;
+            this.puck.radius = 35;
+            this.destoryItem();
             break;
           case 1:
-            this.puck.radius = this.puck.radius * 1.5;
-            break;
-          case 2:
-            this.puck.radius = this.puck.radius * 1.5;
+            this.puck.vel.x *= 1.2;
+            this.puck.vel.y *= 1.2;
+            this.destoryItem();
             break;
         }
-
+        this.getItem = true;
       }
 
       if(this.distance(this.p2, this.item) < this.p2.radius + this.item.radius){
         switch (this.item.itemNum) {
           case 0:
-            this.p2.radius = this.p2.radius* 1.5;
+            this.puck.radius = 35;
+            this.destoryItem();
             break;
           case 1:
-            this.puck.radius = this.puck.radius * 1.5;
-            break;
-          case 2:
-            this.puck.radius = this.puck.radius * 1.5;
+            this.puck.vel.x *= 1.2;
+            this.puck.vel.y *= 1.2;
+            this.destoryItem();
             break;
         }
+        this.getItem = true;
       }
 
       if(p1Impulse || p2Impulse){
@@ -272,13 +286,13 @@ class GameManager{
       if(Math.abs(this.puck.vel.y)<0.001){
         this.puck.vel.y =0;
       }
-
       this.io.sockets.in(this.room).emit("updateInfo",{
         object: "item",
         itemCount: this.item.itemCount,
         itemNum: this.item.itemNum,
         pos: this.item.pos,
         vel: this.item.vel,
+        alive: this.item.alive,
         time: new Date().getTime()
       });
 
@@ -286,6 +300,7 @@ class GameManager{
         object: "puck",
         pos: this.puck.pos,
         vel: this.puck.vel,
+        radius: this.puck.radius,
         time: new Date().getTime()
       });
     }
@@ -293,10 +308,13 @@ class GameManager{
       this.puck.vel = {x: 0, y: 0};
       this.puck.pos = {x: this.gameWidth/2, y: this.gameHeight/2};
 
+      this.destoryItem();
+
       this.io.sockets.in(this.room).emit("updateInfo",{
         object: "puck",
         pos: this.puck.pos,
         vel: this.puck.vel,
+        radius: this.puck.radius,
         time: new Date().getTime()
       });
 
@@ -306,6 +324,7 @@ class GameManager{
         itemNum: this.item.itemNum,
         pos: this.item.pos,
         vel: this.item.vel,
+        alive: this.item.alive,
         time: new Date().getTime()
       });
     }
@@ -335,7 +354,8 @@ class GameManager{
       this.io.sockets.in(this.room).emit("updateInfo",{
         object: "puck",
         pos: this.puck.pos,
-        vel: this.puck.vel
+        vel: this.puck.vel,
+        radius: this.puck.radius
       });
 
       if(this.p1.score >= 10 || this.p2.score >= 10){
@@ -344,7 +364,7 @@ class GameManager{
       }
       else{
         this.notifyUsersMultiple(["開始まで 3","2","1","開始!"],500);
-        this.activateGame(2000);
+        this.activateGame(3000);
       }
     }
   }
@@ -381,6 +401,26 @@ class GameManager{
 
   randomv(num){
   	return Math.floor(Math.random() * num);
+  }
+
+  destoryItem(){
+    this.item.pos.x = 2000;
+    this.item.pos.y = 2000;
+    this.item.vel.x = 0;
+    this.item.vel.y = 0;
+    this.item.itemCount = 0;
+    this.item.alive = false;
+    this.itemInstTimer = 0;
+  }
+
+  resetItemEfficacy(){
+    if(this.item.itemNum == 0){
+      this.puck.radius = 25;
+    }
+    if(this.item.itemNum == 1){
+      this.puck.vel.x /= 1.2;
+      this.puck.vel.y /= 1.2;
+    }
   }
 }
 

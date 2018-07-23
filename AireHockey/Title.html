@@ -10,17 +10,17 @@
 
     const image  = new Image();
     const image2 = new Image();
-    image.src    = "Images/Title.png";
-    image2.src   = "Images/Title2.png";
+    image.src    = "/Images/TitleBack.png";
+    image2.src   = "/Images/TitleBack2.png";
 
     var titlebgm = new Audio();
     titlebgm.autoplay = false;
-    titlebgm.src = "Sounds/titlebgm.mp3";
+    titlebgm.src = "/Sounds/titlebgm.mp3";
     titlebgm.loop = true;
 
     var titlese = new Audio();
     titlese.autoplay = false;
-    titlese.src = "Sounds/titlese.mp3";
+    titlese.src = "/Sounds/titlese.mp3";
     titlese.loop = false;
     var aloaded = 0;
     var ANIMATION_ID;
@@ -42,7 +42,7 @@
             if (470 <= my && (my <= 570)) {
               titlese.currentTime = 0;
               titlese.play();
-              location.href = "game.html";
+              location.href = "/game.html";
             }
           }
         };

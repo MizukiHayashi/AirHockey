@@ -7,7 +7,7 @@ var port = 3001;
 var curRoomNum = 1;
 
 var app = http.createServer(router).listen(port);
-console.log("HTTP server started, listening on port" + port);
+console.log("HTTPサーバー起動, ポート番号" + port);
 
 var io = socketio(app);
 var users = [];
@@ -65,9 +65,9 @@ var onDisconnect = function(socket){
 };
 
 io.sockets.on("connection",function(socket){
-  onJoined(socket);
-  onDisconnect(socket);
+    onJoined(socket);
+    onDisconnect(socket);
 });
-console.log("Websocket server started");
+console.log("サーバー起動");
 
 setInterval(cleanGames,1000);
