@@ -10,8 +10,8 @@ var item_PuckScale = fs.readFileSync(__dirname + "/Images/puckScale.png");
 var item_PuckSpeed = fs.readFileSync(__dirname + "/Images/puckSpeed.png");
 var titleBack = fs.readFileSync(__dirname + "/Images/TitleBack.png");
 var titleBack2 = fs.readFileSync(__dirname + "/Images/TitleBack2.png");
-var titlebgm = fs.readFileSync(__dirname + "/Sounds/titlebgm.mp3");
-var titlese = fs.readFileSync(__dirname + "/Sounds/titlese.mp3");
+var titlebgm = fs.readFileSync(__dirname + "/Sounds/Titlebgm.wav");
+var titlese = fs.readFileSync(__dirname + "/Sounds/Titlese.wav");
 
 var router = function(request, response){
   switch (request.url) {
@@ -55,12 +55,12 @@ var router = function(request, response){
       response.writeHead(200, {"Content-Type": "image/gif"});
       response.write(titleBack2);
       break;
-    case '/Sounds/titlebgm.mp3':
-      response.writeHead(200, {"Content-Type": "sound/mp3"});
+    case '/Sounds/Titlebgm.wav':
+      response.writeHead(200, {"Content-Type": "sound/wav"});
       response.write(titlebgm);
       break;
-    case '/Sounds/titlese.mp3':
-      response.writeHead(200, {"Content-Type": "sound/mp3"});
+    case '/Sounds/Titlese.wav':
+      response.writeHead(200, {"Content-Type": "sound/wav"});
       response.write(titlese);
       break;
   }

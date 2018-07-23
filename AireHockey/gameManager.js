@@ -170,7 +170,7 @@ class GameManager{
 
       if(this.item.itemCount === 0){
         this.itemInstTimer++;
-        //console.log(itemInstTimer);
+        //console.log(this.itemInstTimer);
       }
       if(this.item.itemCount === 0 &&   this.itemInstTimer >= this.itemInstTime){
         var itemRand = this.randomv(10);
@@ -307,7 +307,7 @@ class GameManager{
     else{
       this.puck.vel = {x: 0, y: 0};
       this.puck.pos = {x: this.gameWidth/2, y: this.gameHeight/2};
-
+      this.resetItemEfficacy();
       this.destoryItem();
 
       this.io.sockets.in(this.room).emit("updateInfo",{
