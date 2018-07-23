@@ -12,6 +12,7 @@ class GameManager{
 
     this.gameComplete = false;
     this.gameActive = false;
+    this.intervalOn = false;
 
     this.puck = {
       pos:{
@@ -125,7 +126,10 @@ class GameManager{
 
   activateGame(delay){
     setTimeout(function(){
-      setInterval(this.update.bind(this),1000/120);
+      if(this.intervalOn == false){
+        setInterval(this.update.bind(this),1000/120);
+        this.intervalOn=true;
+      }
       this.gameActive = true;
     }.bind(this),delay);
   }
